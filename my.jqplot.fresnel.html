@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <title>Fresnel Reflection</title>
+    <link href="css/tamuIndex-6.css" rel="stylesheet"/>
+    <link class="include" rel="stylesheet" type="text/css" href="./jquery.jqplot.min.css" />
+     <script class="include" type="text/javascript" src="./jquery.min.js"></script>
+     <script class="include" type="text/javascript" src="./jquery.jqplot.min.js"></script>
+     <script class="include" language="javascript" type="text/javascript" src="./jqplot.cursor.min.js"></script>
+
+     <script class="code" type="text/javascript">
+     /*
+       Examples From
+       JavaScript: The Definitive Guide, Fourth Edition
+
+       Legal matters: these files were created by David Flanagan, and are
+       Copyright (c) 2001 by David Flanagan.  You may use, study, modify, and
+       distribute them for any purpose.  Please note that these examples are
+       provided "as-is" and come with no warranty of any kind.
+
+       David Flanagan
+     */
+
+     /*
+      * Complex.js:
+      * This file defines a Complex class to represent complex numbers.
+      * Recall that a complex number is the sum of a real number and an
+      * imaginary number, and that the imaginary number i is the
+      * square root of -1.
+      */
+
+     /*
+      * The first step in defining a class is defining the constructor
+      * function of the class. This constructor should initialize any
+      * instance properties of the object. These are the essential
+      * "state variables" that make each instance of the class different.
+      */
+     function Complex(real, imaginary) {
+     this.x = real;       // The real part of the number
+     this.y = imaginary;  // The imaginary part of the number
+ }
+
+ /*
+  * The second step in defining a class is defining its instance
+  * methods (and possibly other properties) in the prototype object
+  * of the constructor. Any properties defined in this object will
+  * be inherited by all instances of the class. Note that instance
+  * methods operate implicitly on the this keyword. For many methods,
+  * no other arguments are needed.
+  */
+
+ // Return the magnitude of a complex number. This is defined
+ // as its distance from the origin (0,0) of the complex plane.
+     Complex.prototype.magnitude = function() {
+	 return Math.sqrt(this.x*this.x + this.y*this.y);
+     };
+
+// Return a complex number that is the negative of this one.
+Complex.prototype.negative = function() {
+    return new Complex(-this.x, -this.y);
+};
+
+// Convert a Complex object to a string in a useful way.
+// This is invoked when a Complex object is used as a string.
+Complex.prototype.toString = function() {
+    return "{" + this.x + "," + this.y + "}";
+};
+
+// Return the real portion of a complex number. This function
+// is invoked when a Complex object is treated as a primitive value.
+Complex.prototype.valueOf = function() { return this.x; }
+
+/*
+ * The third step in defining a class is to define class methods,
+ * constants, and any needed class properties as properties of the
+ * constructor function itself (instead of as properties of the
+ * prototype object of the constructor). Note that class methods
+ * do not use the this keyword: they operate only on their arguments.
+ */
+
+// Add two complex numbers and return the result.
+    Complex.add = function (a, b) {
+	return new Complex(a.x + b.x, a.y + b.y);
+    };
+
+// Subtract one complex number from another.
+Complex.subtract = function (a, b) {
+    return new Complex(a.x - b.x, a.y - b.y);
+};
+
+// Multiply two complex numbers and return the product.
+Complex.multiply = function(a, b) {
+    return new Complex(a.x * b.x - a.y * b.y,
+                       a.x * b.y + a.y * b.x);
+};
+
+Complex.divide = function(a, b)
+{ denorm = b.x*b.x + b.y*b.y;
+  return new Complex((a.x*b.x + a.y*b.y)/denorm,
+		     (a.y*b.x - a.x*b.y)/denorm);
+}
+
+    Complex.modsquare = function(a)
+    { return a.x*a.x + a.y*a.y;
+    }
+
+    // Here are some useful predefined complex numbers.
+    // They are defined as class properties, where they can be used as
+    // "constants." (Note, though, that they are not actually read-only.)
+	Complex.zero = new Complex(0,0);
+Complex.one = new Complex(1,0);
+Complex.i = new Complex(0,1);
+
+
+//==================================================
+//\author: Meng Gao @ TAMU
+//\date: 05/14/2012
+//\history: inspired from the TTM calculator by youyu:
+//http://people.physics.tamu.edu/yyou/temp/TMM.html
+//\todo: add button of the plot function
+
+function fresnel(th1, n1, n2r, n2i)
+{
+    //follow Born and Wolf
+    th1 = th1*Math.PI/180;//incident angle, real
+    nc11=n1*Math.cos(th1);
+    alpha=Math.pow(n2r,2)-Math.pow(n2i,2)-Math.pow(n1*Math.sin(th1),2);
+    u2=Math.sqrt(1/2)*Math.sqrt(alpha+Math.sqrt(Math.pow(alpha,2)+Math.pow(2*n2r*n2i,2)));
+    v2=Math.sqrt(1/2)*Math.sqrt(-alpha+Math.sqrt(Math.pow(alpha,2)+Math.pow(2*n2r*n2i,2)));
+    epsilon=new Complex(Math.pow(n2r,2)-Math.pow(n2i,2), 2*n2r*n2i);
+    //reflection coefficients
+    rs=Complex.divide(new Complex(nc11-u2, -v2), new Complex(nc11+u2, v2));
+    rp=Complex.divide(new Complex(epsilon.x*Math.cos(th1)-n1*u2, epsilon.y*Math.cos(th1)-n1*v2), new Complex(epsilon.x*Math.cos(th1)+n1*u2, epsilon.y*Math.cos(th1)+n1*v2));
+
+    m11=(Complex.modsquare(rp)+Complex.modsquare(rs))/2;
+    m12=(Complex.modsquare(rp)-Complex.modsquare(rs))/2;
+    rsconj=new Complex(rs.x, -rs.y);
+    m33=Complex.multiply(rp,rsconj).x;
+    m34=Complex.multiply(rp,rsconj).y;
+
+    return {rp:rp, rs:rs, m11:m11, m12:m12, m33:m33, m34: m34};
+    //     return {m11:m11, m12:m12, m33:m33, m34: m34};
+}
+
+//return to the webpage
+function calc()
+{
+    f = document.f1;
+    th1 = f.th1.value;
+    n1  = f.n1.value;//real
+    n2r  = f.n2r.value;
+    n2i  = f.n2i.value;
+    var f2=fresnel(th1,n1,n2r,n2i);
+
+    f.rpr.value=f2.rp.x;
+    f.rpi.value=f2.rp.y;
+    f.rsr.value=f2.rs.x;
+    f.rsi.value=f2.rs.y;
+
+    f.m11.value=f2.m11;
+    f.m12.value=f2.m12;
+    f.m33.value=f2.m33;
+    f.m34.value=f2.m34;
+
+}
+
+//plot functions
+function plot(n1, n2r, n2i)
+{
+	var line11 = [];
+	var line12 = [];
+	var line33 = [];
+	var line34 = [];
+
+	for (var i=0; i<=90; i+=1){
+	    var f2=fresnel(i, n1, n2r, n2i)
+	    line11.push([i, f2.m11]);
+	    line12.push([i, f2.m12]);
+	    line33.push([i, f2.m33]);
+	    line34.push([i, f2.m34]);
+	}
+	//=====================================			  
+	var plot11 = $.jqplot('chart11', [line11], {
+		series:[{showMarker:false}],
+		axes:{
+		    xaxis:{
+			label:'incident angle (Degree)'
+		    },
+		    yaxis:{
+			label:'m11',
+			tickOptions:{ formatString:'%.3f' }
+		    }
+		},
+		highlighter: {
+		    show: false
+		},
+		cursor: {
+		    show: true,
+		    tooltipLocation:'sw'
+		}
+	    });
+	//===============================
+	var plot12 = $.jqplot('chart12', [line12], {
+		series:[{showMarker:false}],
+		axes:{
+		    xaxis:{
+			label:'incident angle (Degree)'
+		    },
+		    yaxis:{
+			label:'m12',
+			tickOptions:{ formatString:'%.3f' }
+		    }
+		},
+		highlighter: {
+		    show: false
+		},
+		cursor: {
+		    show: true,
+		    tooltipLocation:'sw'
+		}
+	    });
+	//=============================
+	var plot33 = $.jqplot('chart33', [line33], {
+		series:[{showMarker:false}],
+		axes:{
+		    xaxis:{
+			label:'incident angle (Degree)'
+		    },
+		    yaxis:{
+			label:'m33',
+			tickOptions:{ formatString:'%.3f' }
+		    }
+		},
+		highlighter: {
+		    show: false
+		},
+		cursor: {
+		    show: true,
+		    tooltipLocation:'sw'
+		}
+	    });
+	//============================
+	var plot34 = $.jqplot('chart34', [line34], {
+		series:[{showMarker:false}],
+		axes:{
+		    xaxis:{
+			label:'incident angle (Degree)'
+		    },
+		    yaxis:{
+			label:'m34',
+			tickOptions:{ formatString:'%.3f' }
+		    }
+		},
+		highlighter: {
+		    show: false
+		},
+		cursor: {
+		    show: true,
+		    tooltipLocation:'sw'
+		}
+	    });
+			     return {plot11:plot11, plot12:plot12,plot33:plot33,plot34:plot34};
+    }
+
+
+
+$(document).ready(function(){
+	f = document.f1;
+	n1  = f.n1.value;//real
+	n2r  = f.n2r.value;
+	n2i  = f.n2i.value;
+        plot(n1,n2r,n2i);
+});
+
+function redraw()
+{
+	f = document.f1;
+	n1  = f.n1.value;//real
+	n2r  = f.n2r.value;
+	n2i  = f.n2i.value;
+        plots=plot(n1,n2r,n2i);
+
+        plots.plot11.replot({ clear: true, resetAxes: true }); 
+        plots.plot12.replot({ clear: true, resetAxes: true }); 
+        plots.plot33.replot({ clear: true, resetAxes: true }); 
+        plots.plot34.replot({ clear: true, resetAxes: true }); 
+
+}
+
+
+
+</script>
+
+    </head>
+
+    <body>
+
+    <h2>Fresnel reflection with complex refractive index</h2>
+    Follow Born & Wolf, 7th ed, 14.4 (p752-p754)<br>
+    <hr align="left" size="4" color="maroon" />
+
+
+    <form name="f1" method="POST" action="javascript:calc()">
+    <h4>Input parameters:</h4>
+    External refractive index (real): <input type="text" value="1" name="n1">
+    Internal refractive index(real,img): <input type="text" value="1.33" name="n2r">
+    <input type="text" value="1" name="n2i"><br>
+    <hr>
+
+    <h4> Reflected Mueller matrix vs incident angles.</h4> 
+    Note for Fresnel refleciton, the refleted angle always equals to the incident angle, <br>
+    and m21=m12, m22=m11, m34=-m43, m44=m33, other mij=0. <br>
+    <br>( Please use Update button
+    when using new refractive index specified above. <br>
+    Move the cursor on the graph to show the exat data value.) <br>
+
+    <input id="btnTest" type="button" value="Update" 
+	   onclick="redraw()"/> <br>
+
+    <br>
+    <div>
+    <div id="chart11" style="height:300px; width:600px; float: left;"></div>
+    <div id="chart12" style="height:300px; width:600px; float: left;"></div>
+    </div>
+    <div>
+    <div id="chart33" style="height:300px; width:600px;float: left;"></div>
+    <div id="chart34" style="height:300px; width:600px;float: left;"></div>
+    <div style="clear:both;"></div>
+    </div>
+    <br>
+    <br>
+
+    <hr>
+
+    <h4>Reflection and Mueller Matirx values for a single incident angle.</h4>
+    Indicent angle (degree): <input type="text" value="0" name="th1"><br>
+    <input type="submit" value="Calculate" name="B1">
+    <input type="reset" value="Reset" name="B2"><br>
+    
+    <br>Complex reflection coefficients(for electiric field):<br>
+    p-pol: <input type="text" name="rpr"><input type="text" name="rpi"> 
+    s-pol: <input type="text" name="rsr"><input type="text" name="rsi"><br>
+
+    <br>Mueller Matrix components(m21=m12, m22=m11, m34=-m43, m44=m33):<br>
+    m11: <input type="text" name="m11"> m12: <input type="text" name="m12"> 
+    m33: <input type="text" name="m33"> m34: <input type="text" name="m34"><br>
+    <br>
+
+<hr align="left" size="4" color="maroon" />
+Last Modified: 
+<script type="text/javascript">
+document.write(document.lastModified);
+</script>
+
+    </div>
+    </form>
+
+
+
+    </body>
+    </html>
