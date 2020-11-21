@@ -12,5 +12,10 @@ Features:
 - Studies the impact of medium absorption
 
 <H2 style="color:blue">
-Written in Javascript
+Development
 </H2>
+
+- Written in Javascript
+- Currently hosted in Texas A&M University
+- Last modified in 2012
+- Rescued to github in 2020
