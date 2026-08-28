@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A collection of browser-based scientific tools, including an online Fresnel calculator for Mueller-matrix calculations and polarization studies.">
+  <title>Web Tools | Fresnel Calculator</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="./">Web Tools</a>
+      <nav aria-label="Primary navigation">
+        <a href="#tools">Tools</a>
+        <a href="#about">About</a>
+        <a href="https://github.com/kiwiriver/fresnel_calculator">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <p class="eyebrow">Browser-based scientific utilities</p>
+          <h1>Small web tools for optics and remote sensing</h1>
+          <p class="hero-text">
+            A lightweight collection of interactive HTML tools that run directly
+            in your browser. No installation is required.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="tools/my.jqplot.fresnel.html">Open Fresnel Calculator</a>
+            <a class="button secondary" href="https://github.com/kiwiriver/fresnel_calculator">View Source</a>
+          </div>
+        </div>
+
+        <div class="hero-card" aria-label="Fresnel calculator summary">
+          <div class="matrix">
+            <span>M<sub>11</sub></span>
+            <span>M<sub>12</sub></span>
+            <span>M<sub>33</sub></span>
+            <span>M<sub>34</sub></span>
+          </div>
+          <p>Fresnel reflection · Mueller matrix · Polarization</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="tools" class="section">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">Tools</p>
+          <h2>Available web applications</h2>
+          <p>Add additional standalone HTML tools here as the repository grows.</p>
+        </div>
+
+        <div class="tool-grid">
+          <article class="tool-card featured">
+            <div class="tool-top">
+              <span class="tool-icon">F</span>
+              <span class="status">Available</span>
+            </div>
+            <h3>Online Fresnel Calculator</h3>
+            <p>
+              Compute Fresnel reflection properties and Mueller-matrix elements
+              for arbitrary internal and external refractive indices.
+            </p>
+            <ul>
+              <li>Compute Mueller-matrix elements</li>
+              <li>Plot matrix elements versus reflection angle</li>
+              <li>Explore circular polarization through M<sub>34</sub></li>
+              <li>Study the effect of absorbing media</li>
+            </ul>
+            <a class="tool-link" href="tools/my.jqplot.fresnel.html">
+              Launch calculator <span aria-hidden="true">→</span>
+            </a>
+          </article>
+
+          <article class="tool-card placeholder">
+            <div class="tool-top">
+              <span class="tool-icon">+</span>
+              <span class="status muted">Future</span>
+            </div>
+            <h3>More tools</h3>
+            <p>
+              Additional HTML utilities can be added to this repository and
+              linked from this page without changing the deployment workflow.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="section alt">
+      <div class="container about-grid">
+        <div>
+          <p class="eyebrow">About</p>
+          <h2>Fresnel Calculator</h2>
+        </div>
+        <div>
+          <p>
+            The original calculator was written in JavaScript and developed in
+            2012. The source was recovered and moved to GitHub in 2020 so the
+            tool can remain accessible as a static web application.
+          </p>
+          <p>
+            This landing page provides a stable entry point for the calculator
+            and for additional browser-based tools added in the future.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-content">
+      <span>Web Tools</span>
+      <span>
+        Source:
+        <a href="https://github.com/kiwiriver/fresnel_calculator">
+          kiwiriver/fresnel_calculator
+        </a>
+      </span>
+    </div>
+  </footer>
+</body>
+</html>
