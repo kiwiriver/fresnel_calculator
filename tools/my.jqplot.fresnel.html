@@ -1,361 +1,676 @@
 <!DOCTYPE html>
-<html>
-    <head>
-    <title>Fresnel Reflection</title>
-    <link href="css/tamuIndex-6.css" rel="stylesheet"/>
-    <link class="include" rel="stylesheet" type="text/css" href="./jquery.jqplot.min.css" />
-     <script class="include" type="text/javascript" src="./jquery.min.js"></script>
-     <script class="include" type="text/javascript" src="./jquery.jqplot.min.js"></script>
-     <script class="include" language="javascript" type="text/javascript" src="./jqplot.cursor.min.js"></script>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive Fresnel reflection calculator for complex refractive indices and Mueller-matrix elements.">
+  <title>Fresnel Reflection Calculator</title>
 
-     <script class="code" type="text/javascript">
-     /*
-       Examples From
-       JavaScript: The Definitive Guide, Fourth Edition
-
-       Legal matters: these files were created by David Flanagan, and are
-       Copyright (c) 2001 by David Flanagan.  You may use, study, modify, and
-       distribute them for any purpose.  Please note that these examples are
-       provided "as-is" and come with no warranty of any kind.
-
-       David Flanagan
-     */
-
-     /*
-      * Complex.js:
-      * This file defines a Complex class to represent complex numbers.
-      * Recall that a complex number is the sum of a real number and an
-      * imaginary number, and that the imaginary number i is the
-      * square root of -1.
-      */
-
-     /*
-      * The first step in defining a class is defining the constructor
-      * function of the class. This constructor should initialize any
-      * instance properties of the object. These are the essential
-      * "state variables" that make each instance of the class different.
-      */
-     function Complex(real, imaginary) {
-     this.x = real;       // The real part of the number
-     this.y = imaginary;  // The imaginary part of the number
- }
-
- /*
-  * The second step in defining a class is defining its instance
-  * methods (and possibly other properties) in the prototype object
-  * of the constructor. Any properties defined in this object will
-  * be inherited by all instances of the class. Note that instance
-  * methods operate implicitly on the this keyword. For many methods,
-  * no other arguments are needed.
-  */
-
- // Return the magnitude of a complex number. This is defined
- // as its distance from the origin (0,0) of the complex plane.
-     Complex.prototype.magnitude = function() {
-	 return Math.sqrt(this.x*this.x + this.y*this.y);
-     };
-
-// Return a complex number that is the negative of this one.
-Complex.prototype.negative = function() {
-    return new Complex(-this.x, -this.y);
-};
-
-// Convert a Complex object to a string in a useful way.
-// This is invoked when a Complex object is used as a string.
-Complex.prototype.toString = function() {
-    return "{" + this.x + "," + this.y + "}";
-};
-
-// Return the real portion of a complex number. This function
-// is invoked when a Complex object is treated as a primitive value.
-Complex.prototype.valueOf = function() { return this.x; }
-
-/*
- * The third step in defining a class is to define class methods,
- * constants, and any needed class properties as properties of the
- * constructor function itself (instead of as properties of the
- * prototype object of the constructor). Note that class methods
- * do not use the this keyword: they operate only on their arguments.
- */
-
-// Add two complex numbers and return the result.
-    Complex.add = function (a, b) {
-	return new Complex(a.x + b.x, a.y + b.y);
-    };
-
-// Subtract one complex number from another.
-Complex.subtract = function (a, b) {
-    return new Complex(a.x - b.x, a.y - b.y);
-};
-
-// Multiply two complex numbers and return the product.
-Complex.multiply = function(a, b) {
-    return new Complex(a.x * b.x - a.y * b.y,
-                       a.x * b.y + a.y * b.x);
-};
-
-Complex.divide = function(a, b)
-{ denorm = b.x*b.x + b.y*b.y;
-  return new Complex((a.x*b.x + a.y*b.y)/denorm,
-		     (a.y*b.x - a.x*b.y)/denorm);
-}
-
-    Complex.modsquare = function(a)
-    { return a.x*a.x + a.y*a.y;
+  <style>
+    :root {
+      --bg: #f7f9fc;
+      --surface: #ffffff;
+      --surface-soft: #eef4fb;
+      --text: #172033;
+      --muted: #667085;
+      --line: #dce4ef;
+      --accent: #1769aa;
+      --accent-dark: #0f4f82;
+      --radius: 16px;
+      --shadow: 0 14px 36px rgba(31, 52, 79, 0.08);
     }
 
-    // Here are some useful predefined complex numbers.
-    // They are defined as class properties, where they can be used as
-    // "constants." (Note, though, that they are not actually read-only.)
-	Complex.zero = new Complex(0,0);
-Complex.one = new Complex(1,0);
-Complex.i = new Complex(0,1);
-
-
-//==================================================
-//\author: Meng Gao @ TAMU
-//\date: 05/14/2012
-//\history: inspired from the TTM calculator by youyu:
-//http://people.physics.tamu.edu/yyou/temp/TMM.html
-//\todo: add button of the plot function
-
-function fresnel(th1, n1, n2r, n2i)
-{
-    //follow Born and Wolf
-    th1 = th1*Math.PI/180;//incident angle, real
-    nc11=n1*Math.cos(th1);
-    alpha=Math.pow(n2r,2)-Math.pow(n2i,2)-Math.pow(n1*Math.sin(th1),2);
-    u2=Math.sqrt(1/2)*Math.sqrt(alpha+Math.sqrt(Math.pow(alpha,2)+Math.pow(2*n2r*n2i,2)));
-    v2=Math.sqrt(1/2)*Math.sqrt(-alpha+Math.sqrt(Math.pow(alpha,2)+Math.pow(2*n2r*n2i,2)));
-    epsilon=new Complex(Math.pow(n2r,2)-Math.pow(n2i,2), 2*n2r*n2i);
-    //reflection coefficients
-    rs=Complex.divide(new Complex(nc11-u2, -v2), new Complex(nc11+u2, v2));
-    rp=Complex.divide(new Complex(epsilon.x*Math.cos(th1)-n1*u2, epsilon.y*Math.cos(th1)-n1*v2), new Complex(epsilon.x*Math.cos(th1)+n1*u2, epsilon.y*Math.cos(th1)+n1*v2));
-
-    m11=(Complex.modsquare(rp)+Complex.modsquare(rs))/2;
-    m12=(Complex.modsquare(rp)-Complex.modsquare(rs))/2;
-    rsconj=new Complex(rs.x, -rs.y);
-    m33=Complex.multiply(rp,rsconj).x;
-    m34=Complex.multiply(rp,rsconj).y;
-
-    return {rp:rp, rs:rs, m11:m11, m12:m12, m33:m33, m34: m34};
-    //     return {m11:m11, m12:m12, m33:m33, m34: m34};
-}
-
-//return to the webpage
-function calc()
-{
-    f = document.f1;
-    th1 = f.th1.value;
-    n1  = f.n1.value;//real
-    n2r  = f.n2r.value;
-    n2i  = f.n2i.value;
-    var f2=fresnel(th1,n1,n2r,n2i);
-
-    f.rpr.value=f2.rp.x;
-    f.rpi.value=f2.rp.y;
-    f.rsr.value=f2.rs.x;
-    f.rsi.value=f2.rs.y;
-
-    f.m11.value=f2.m11;
-    f.m12.value=f2.m12;
-    f.m33.value=f2.m33;
-    f.m34.value=f2.m34;
-
-}
-
-//plot functions
-function plot(n1, n2r, n2i)
-{
-	var line11 = [];
-	var line12 = [];
-	var line33 = [];
-	var line34 = [];
-
-	for (var i=0; i<=90; i+=1){
-	    var f2=fresnel(i, n1, n2r, n2i)
-	    line11.push([i, f2.m11]);
-	    line12.push([i, f2.m12]);
-	    line33.push([i, f2.m33]);
-	    line34.push([i, f2.m34]);
-	}
-	//=====================================			  
-	var plot11 = $.jqplot('chart11', [line11], {
-		series:[{showMarker:false}],
-		axes:{
-		    xaxis:{
-			label:'incident angle (Degree)'
-		    },
-		    yaxis:{
-			label:'m11',
-			tickOptions:{ formatString:'%.3f' }
-		    }
-		},
-		highlighter: {
-		    show: false
-		},
-		cursor: {
-		    show: true,
-		    tooltipLocation:'sw'
-		}
-	    });
-	//===============================
-	var plot12 = $.jqplot('chart12', [line12], {
-		series:[{showMarker:false}],
-		axes:{
-		    xaxis:{
-			label:'incident angle (Degree)'
-		    },
-		    yaxis:{
-			label:'m12',
-			tickOptions:{ formatString:'%.3f' }
-		    }
-		},
-		highlighter: {
-		    show: false
-		},
-		cursor: {
-		    show: true,
-		    tooltipLocation:'sw'
-		}
-	    });
-	//=============================
-	var plot33 = $.jqplot('chart33', [line33], {
-		series:[{showMarker:false}],
-		axes:{
-		    xaxis:{
-			label:'incident angle (Degree)'
-		    },
-		    yaxis:{
-			label:'m33',
-			tickOptions:{ formatString:'%.3f' }
-		    }
-		},
-		highlighter: {
-		    show: false
-		},
-		cursor: {
-		    show: true,
-		    tooltipLocation:'sw'
-		}
-	    });
-	//============================
-	var plot34 = $.jqplot('chart34', [line34], {
-		series:[{showMarker:false}],
-		axes:{
-		    xaxis:{
-			label:'incident angle (Degree)'
-		    },
-		    yaxis:{
-			label:'m34',
-			tickOptions:{ formatString:'%.3f' }
-		    }
-		},
-		highlighter: {
-		    show: false
-		},
-		cursor: {
-		    show: true,
-		    tooltipLocation:'sw'
-		}
-	    });
-			     return {plot11:plot11, plot12:plot12,plot33:plot33,plot34:plot34};
+    * {
+      box-sizing: border-box;
     }
 
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.55;
+    }
 
+    .container {
+      width: min(1180px, calc(100% - 36px));
+      margin: 0 auto;
+    }
 
-$(document).ready(function(){
-	f = document.f1;
-	n1  = f.n1.value;//real
-	n2r  = f.n2r.value;
-	n2i  = f.n2i.value;
-        plot(n1,n2r,n2i);
-});
+    header {
+      padding: 54px 0 36px;
+      background:
+        radial-gradient(circle at 85% 15%, rgba(23,105,170,.12), transparent 28rem),
+        linear-gradient(180deg, #fff 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--line);
+    }
 
-function redraw()
-{
-	f = document.f1;
-	n1  = f.n1.value;//real
-	n2r  = f.n2r.value;
-	n2i  = f.n2i.value;
-        plots=plot(n1,n2r,n2i);
+    .eyebrow {
+      margin: 0 0 8px;
+      font-size: .78rem;
+      font-weight: 800;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
 
-        plots.plot11.replot({ clear: true, resetAxes: true }); 
-        plots.plot12.replot({ clear: true, resetAxes: true }); 
-        plots.plot33.replot({ clear: true, resetAxes: true }); 
-        plots.plot34.replot({ clear: true, resetAxes: true }); 
+    h1, h2, h3 {
+      line-height: 1.2;
+      letter-spacing: -.025em;
+    }
 
-}
+    h1 {
+      margin: 0;
+      font-size: clamp(2.3rem, 5vw, 4rem);
+    }
 
+    .lead {
+      max-width: 760px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 1.08rem;
+    }
 
+    main {
+      padding: 40px 0 60px;
+    }
 
-</script>
+    .panel {
+      margin-bottom: 26px;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
 
-    </head>
+    .panel h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 1.5rem;
+    }
 
-    <body>
+    .panel-intro {
+      margin-top: 0;
+      color: var(--muted);
+    }
 
-    <h2>Fresnel reflection with complex refractive index</h2>
-    Follow Born & Wolf, 7th ed, 14.4 (p752-p754)<br>
-    <hr align="left" size="4" color="maroon" />
+    .input-grid,
+    .output-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 22px;
+    }
 
+    label {
+      display: block;
+      font-size: .9rem;
+      font-weight: 700;
+    }
 
-    <form name="f1" method="POST" action="javascript:calc()">
-    <h4>Input parameters:</h4>
-    External refractive index (real): <input type="text" value="1" name="n1">
-    Internal refractive index(real,img): <input type="text" value="1.33" name="n2r">
-    <input type="text" value="1" name="n2i"><br>
-    <hr>
+    input[type="number"],
+    input[type="text"] {
+      width: 100%;
+      margin-top: 7px;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+    }
 
-    <h4> Reflected Mueller matrix vs incident angles.</h4> 
-    Note for Fresnel refleciton, the refleted angle always equals to the incident angle, <br>
-    and m21=m12, m22=m11, m34=-m43, m44=m33, other mij=0. <br>
-    <br>( Please use Update button
-    when using new refractive index specified above. <br>
-    Move the cursor on the graph to show the exat data value.) <br>
+    input[readonly] {
+      background: #f5f7fa;
+    }
 
-    <input id="btnTest" type="button" value="Update" 
-	   onclick="redraw()"/> <br>
+    button {
+      margin-top: 18px;
+      padding: 11px 18px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--accent);
+      color: white;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+    }
 
-    <br>
-    <div>
-    <div id="chart11" style="height:300px; width:600px; float: left;"></div>
-    <div id="chart12" style="height:300px; width:600px; float: left;"></div>
+    button:hover {
+      background: var(--accent-dark);
+    }
+
+    .matrix-note {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: var(--surface-soft);
+      color: var(--muted);
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .chart-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .chart-title {
+      margin: 0 0 10px;
+      font-weight: 750;
+      text-align: center;
+    }
+
+    canvas {
+      width: 100%;
+      height: 280px;
+      display: block;
+    }
+
+    .chart-readout {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: .86rem;
+      text-align: center;
+      min-height: 1.3em;
+    }
+
+    .coeff-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .result-group {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .result-group h3 {
+      margin-top: 0;
+    }
+
+    .result-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    footer {
+      padding: 24px 0 38px;
+      color: var(--muted);
+      font-size: .9rem;
+      text-align: center;
+    }
+
+    .math sub {
+      font-size: .68em;
+      vertical-align: -.25em;
+    }
+
+    @media (max-width: 820px) {
+      .input-grid,
+      .output-grid,
+      .charts,
+      .coeff-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .input-grid,
+      .output-grid,
+      .charts,
+      .coeff-grid,
+      .result-row {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <p class="eyebrow">Optics Web Tool</p>
+      <h1>Fresnel Reflection Calculator</h1>
+      <p class="lead">
+        Compute Fresnel reflection coefficients and reflected Mueller-matrix
+        elements for a complex refractive index, following Born &amp; Wolf,
+        7th ed., Section 14.4.
+      </p>
     </div>
-    <div>
-    <div id="chart33" style="height:300px; width:600px;float: left;"></div>
-    <div id="chart34" style="height:300px; width:600px;float: left;"></div>
-    <div style="clear:both;"></div>
-    </div>
-    <br>
-    <br>
+  </header>
 
-    <hr>
+  <main class="container">
+    <section class="panel">
+      <h2>Refractive indices</h2>
+      <p class="panel-intro">
+        Specify the external refractive index and the real and imaginary parts
+        of the internal refractive index.
+      </p>
 
-    <h4>Reflection and Mueller Matirx values for a single incident angle.</h4>
-    Indicent angle (degree): <input type="text" value="0" name="th1"><br>
-    <input type="submit" value="Calculate" name="B1">
-    <input type="reset" value="Reset" name="B2"><br>
-    
-    <br>Complex reflection coefficients(for electiric field):<br>
-    p-pol: <input type="text" name="rpr"><input type="text" name="rpi"> 
-    s-pol: <input type="text" name="rsr"><input type="text" name="rsi"><br>
+      <div class="input-grid">
+        <label>
+          External n
+          <input id="n1" type="number" step="any" value="1">
+        </label>
 
-    <br>Mueller Matrix components(m21=m12, m22=m11, m34=-m43, m44=m33):<br>
-    m11: <input type="text" name="m11"> m12: <input type="text" name="m12"> 
-    m33: <input type="text" name="m33"> m34: <input type="text" name="m34"><br>
-    <br>
+        <label>
+          Internal Re(n)
+          <input id="n2r" type="number" step="any" value="1.33">
+        </label>
 
-<hr align="left" size="4" color="maroon" />
-Last Modified: 
-<script type="text/javascript">
-document.write(document.lastModified);
-</script>
+        <label>
+          Internal Im(n)
+          <input id="n2i" type="number" step="any" value="0">
+        </label>
 
-    </div>
-    </form>
+        <label>
+          Incident angle (°)
+          <input id="theta" type="number" min="0" max="90" step="any" value="0">
+        </label>
+      </div>
 
+      <button id="updateBtn" type="button">Update calculations</button>
 
+      <div class="matrix-note">
+        For Fresnel reflection:
+        <span class="math">M<sub>21</sub> = M<sub>12</sub></span>,
+        <span class="math">M<sub>22</sub> = M<sub>11</sub></span>,
+        <span class="math">M<sub>43</sub> = -M<sub>34</sub></span>,
+        <span class="math">M<sub>44</sub> = M<sub>33</sub></span>.
+        All other elements are zero.
+      </div>
+    </section>
 
-    </body>
-    </html>
+    <section class="panel">
+      <h2>Mueller matrix versus incident angle</h2>
+      <p class="panel-intro">
+        Move the pointer over a plot to inspect the value nearest the selected angle.
+      </p>
+
+      <div class="charts">
+        <div class="chart-card">
+          <p class="chart-title math">M<sub>11</sub></p>
+          <canvas id="chart11"></canvas>
+          <div class="chart-readout" id="readout11"></div>
+        </div>
+
+        <div class="chart-card">
+          <p class="chart-title math">M<sub>12</sub></p>
+          <canvas id="chart12"></canvas>
+          <div class="chart-readout" id="readout12"></div>
+        </div>
+
+        <div class="chart-card">
+          <p class="chart-title math">M<sub>33</sub></p>
+          <canvas id="chart33"></canvas>
+          <div class="chart-readout" id="readout33"></div>
+        </div>
+
+        <div class="chart-card">
+          <p class="chart-title math">M<sub>34</sub></p>
+          <canvas id="chart34"></canvas>
+          <div class="chart-readout" id="readout34"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Single-angle calculation</h2>
+      <p class="panel-intro">
+        Results below correspond to the incident angle specified above.
+      </p>
+
+      <div class="coeff-grid">
+        <div class="result-group">
+          <h3>Complex reflection coefficients</h3>
+
+          <div class="result-row">
+            <label>
+              Re(r<sub>p</sub>)
+              <input id="rpr" type="text" readonly>
+            </label>
+            <label>
+              Im(r<sub>p</sub>)
+              <input id="rpi" type="text" readonly>
+            </label>
+          </div>
+
+          <div class="result-row">
+            <label>
+              Re(r<sub>s</sub>)
+              <input id="rsr" type="text" readonly>
+            </label>
+            <label>
+              Im(r<sub>s</sub>)
+              <input id="rsi" type="text" readonly>
+            </label>
+          </div>
+        </div>
+
+        <div class="result-group">
+          <h3>Mueller-matrix elements</h3>
+
+          <div class="result-row">
+            <label class="math">
+              M<sub>11</sub>
+              <input id="m11" type="text" readonly>
+            </label>
+            <label class="math">
+              M<sub>12</sub>
+              <input id="m12" type="text" readonly>
+            </label>
+          </div>
+
+          <div class="result-row">
+            <label class="math">
+              M<sub>33</sub>
+              <input id="m33" type="text" readonly>
+            </label>
+            <label class="math">
+              M<sub>34</sub>
+              <input id="m34" type="text" readonly>
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Fresnel reflection calculator · Runs entirely in the browser · No external JavaScript libraries required
+  </footer>
+
+  <script>
+    class Complex {
+      constructor(real, imaginary) {
+        this.x = real;
+        this.y = imaginary;
+      }
+
+      static multiply(a, b) {
+        return new Complex(
+          a.x * b.x - a.y * b.y,
+          a.x * b.y + a.y * b.x
+        );
+      }
+
+      static divide(a, b) {
+        const denom = b.x * b.x + b.y * b.y;
+        return new Complex(
+          (a.x * b.x + a.y * b.y) / denom,
+          (a.y * b.x - a.x * b.y) / denom
+        );
+      }
+
+      static modSquare(a) {
+        return a.x * a.x + a.y * a.y;
+      }
+    }
+
+    function fresnel(thetaDeg, n1, n2r, n2i) {
+      const theta = thetaDeg * Math.PI / 180;
+      const nc11 = n1 * Math.cos(theta);
+
+      const alpha =
+        n2r * n2r -
+        n2i * n2i -
+        Math.pow(n1 * Math.sin(theta), 2);
+
+      const beta = Math.sqrt(
+        alpha * alpha + Math.pow(2 * n2r * n2i, 2)
+      );
+
+      const u2 = Math.sqrt(0.5 * Math.max(0, alpha + beta));
+      const v2 = Math.sqrt(0.5 * Math.max(0, -alpha + beta));
+
+      const epsilon = new Complex(
+        n2r * n2r - n2i * n2i,
+        2 * n2r * n2i
+      );
+
+      const rs = Complex.divide(
+        new Complex(nc11 - u2, -v2),
+        new Complex(nc11 + u2, v2)
+      );
+
+      const rp = Complex.divide(
+        new Complex(
+          epsilon.x * Math.cos(theta) - n1 * u2,
+          epsilon.y * Math.cos(theta) - n1 * v2
+        ),
+        new Complex(
+          epsilon.x * Math.cos(theta) + n1 * u2,
+          epsilon.y * Math.cos(theta) + n1 * v2
+        )
+      );
+
+      const m11 = (Complex.modSquare(rp) + Complex.modSquare(rs)) / 2;
+      const m12 = (Complex.modSquare(rp) - Complex.modSquare(rs)) / 2;
+
+      const rsConj = new Complex(rs.x, -rs.y);
+      const cross = Complex.multiply(rp, rsConj);
+
+      return {
+        rp,
+        rs,
+        m11,
+        m12,
+        m33: cross.x,
+        m34: cross.y
+      };
+    }
+
+    function getInputs() {
+      return {
+        n1: Number(document.getElementById("n1").value),
+        n2r: Number(document.getElementById("n2r").value),
+        n2i: Number(document.getElementById("n2i").value),
+        theta: Number(document.getElementById("theta").value)
+      };
+    }
+
+    function formatValue(value) {
+      if (!Number.isFinite(value)) return "—";
+      if (Math.abs(value) < 1e-4 && value !== 0) return value.toExponential(6);
+      return value.toFixed(8);
+    }
+
+    function updateSingleAngle() {
+      const { n1, n2r, n2i, theta } = getInputs();
+      const result = fresnel(theta, n1, n2r, n2i);
+
+      document.getElementById("rpr").value = formatValue(result.rp.x);
+      document.getElementById("rpi").value = formatValue(result.rp.y);
+      document.getElementById("rsr").value = formatValue(result.rs.x);
+      document.getElementById("rsi").value = formatValue(result.rs.y);
+
+      document.getElementById("m11").value = formatValue(result.m11);
+      document.getElementById("m12").value = formatValue(result.m12);
+      document.getElementById("m33").value = formatValue(result.m33);
+      document.getElementById("m34").value = formatValue(result.m34);
+    }
+
+    function buildSeries() {
+      const { n1, n2r, n2i } = getInputs();
+
+      const series = {
+        m11: [],
+        m12: [],
+        m33: [],
+        m34: []
+      };
+
+      for (let angle = 0; angle <= 90; angle += 1) {
+        const r = fresnel(angle, n1, n2r, n2i);
+        series.m11.push({ x: angle, y: r.m11 });
+        series.m12.push({ x: angle, y: r.m12 });
+        series.m33.push({ x: angle, y: r.m33 });
+        series.m34.push({ x: angle, y: r.m34 });
+      }
+
+      return series;
+    }
+
+    function drawChart(canvas, data, label, readout) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const width = rect.width;
+      const height = rect.height;
+
+      const pad = { left: 54, right: 18, top: 18, bottom: 42 };
+      const plotW = width - pad.left - pad.right;
+      const plotH = height - pad.top - pad.bottom;
+
+      const ys = data.map(d => d.y).filter(Number.isFinite);
+      let ymin = Math.min(...ys);
+      let ymax = Math.max(...ys);
+
+      if (ymin === ymax) {
+        ymin -= 0.5;
+        ymax += 0.5;
+      }
+
+      const yPad = (ymax - ymin) * 0.08;
+      ymin -= yPad;
+      ymax += yPad;
+
+      const xToPx = x => pad.left + (x / 90) * plotW;
+      const yToPx = y =>
+        pad.top + (1 - (y - ymin) / (ymax - ymin)) * plotH;
+
+      ctx.clearRect(0, 0, width, height);
+
+      ctx.strokeStyle = "#dce4ef";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "#667085";
+      ctx.font = "12px system-ui, sans-serif";
+
+      for (let x = 0; x <= 90; x += 15) {
+        const px = xToPx(x);
+        ctx.beginPath();
+        ctx.moveTo(px, pad.top);
+        ctx.lineTo(px, pad.top + plotH);
+        ctx.stroke();
+        ctx.fillText(String(x), px - 7, height - 18);
+      }
+
+      for (let i = 0; i <= 4; i++) {
+        const y = ymin + (i / 4) * (ymax - ymin);
+        const py = yToPx(y);
+        ctx.beginPath();
+        ctx.moveTo(pad.left, py);
+        ctx.lineTo(pad.left + plotW, py);
+        ctx.stroke();
+        ctx.fillText(y.toFixed(3), 4, py + 4);
+      }
+
+      ctx.strokeStyle = "#1769aa";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+
+      data.forEach((d, i) => {
+        const x = xToPx(d.x);
+        const y = yToPx(d.y);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+
+      ctx.stroke();
+
+      ctx.fillStyle = "#667085";
+      ctx.fillText("Incident angle (°)", pad.left + plotW / 2 - 48, height - 3);
+
+      canvas.onmousemove = event => {
+        const bounds = canvas.getBoundingClientRect();
+        const mouseX = event.clientX - bounds.left;
+        const angle = Math.max(
+          0,
+          Math.min(90, Math.round(((mouseX - pad.left) / plotW) * 90))
+        );
+
+        const point = data[angle];
+        if (point) {
+          readout.textContent =
+            `${angle}°   ${label} = ${formatValue(point.y)}`;
+        }
+      };
+
+      canvas.onmouseleave = () => {
+        readout.textContent = "";
+      };
+    }
+
+    function redrawAll() {
+      updateSingleAngle();
+
+      const s = buildSeries();
+
+      drawChart(
+        document.getElementById("chart11"),
+        s.m11,
+        "M11",
+        document.getElementById("readout11")
+      );
+
+      drawChart(
+        document.getElementById("chart12"),
+        s.m12,
+        "M12",
+        document.getElementById("readout12")
+      );
+
+      drawChart(
+        document.getElementById("chart33"),
+        s.m33,
+        "M33",
+        document.getElementById("readout33")
+      );
+
+      drawChart(
+        document.getElementById("chart34"),
+        s.m34,
+        "M34",
+        document.getElementById("readout34")
+      );
+    }
+
+    document.getElementById("updateBtn").addEventListener("click", redrawAll);
+
+    ["n1", "n2r", "n2i", "theta"].forEach(id => {
+      document.getElementById(id).addEventListener("keydown", event => {
+        if (event.key === "Enter") redrawAll();
+      });
+    });
+
+    window.addEventListener("resize", redrawAll);
+    window.addEventListener("DOMContentLoaded", redrawAll);
+  </script>
+</body>
+</html>
